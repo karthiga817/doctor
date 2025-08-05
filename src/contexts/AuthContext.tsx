@@ -14,7 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, expectedRole?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   register: (userData: any) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, expectedRole?: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -85,6 +85,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (error) throw error;
+
+      if (data.user && expectedRole) {
+        // Fetch user profile to check role
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError || !userData || userData.role !== expectedRole) {
+          await supabase.auth.signOut();
+          return false;
+        }
+      }
 
       return !!data.user;
     } catch (error) {

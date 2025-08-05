@@ -7,7 +7,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
 
 // Auth Components
-import Login from './components/auth/Login';
+import UserLogin from './components/auth/UserLogin';
+import DoctorLogin from './components/auth/DoctorLogin';
+import AdminLogin from './components/auth/AdminLogin';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
 
@@ -23,6 +25,11 @@ import DoctorAppointments from './pages/DoctorAppointments';
 
 // Admin Pages
 import AdminDashboard from './pages/AdminDashboard';
+import AdminDoctorManagement from './pages/admin/AdminDoctorManagement';
+import AdminPatientManagement from './pages/admin/AdminPatientManagement';
+
+// Doctor Pages - Additional
+import DoctorPrescriptions from './pages/doctor/DoctorPrescriptions';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -34,7 +41,9 @@ const AppContent: React.FC = () => {
   if (!user) {
     return (
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<UserLogin />} />
+        <Route path="/doctor/login" element={<DoctorLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
@@ -92,10 +101,7 @@ const AppContent: React.FC = () => {
         } />
         <Route path="/doctor/prescriptions" element={
           <ProtectedRoute allowedRoles={['doctor']}>
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-gray-900">Prescriptions Management</h2>
-              <p className="text-gray-600 mt-2">Coming soon - Create and manage prescriptions</p>
-            </div>
+            <DoctorPrescriptions />
           </ProtectedRoute>
         } />
         <Route path="/doctor/availability" element={
@@ -115,10 +121,7 @@ const AppContent: React.FC = () => {
         } />
         <Route path="/admin/doctors" element={
           <ProtectedRoute allowedRoles={['admin']}>
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-gray-900">Doctor Management</h2>
-              <p className="text-gray-600 mt-2">Coming soon - Manage doctor profiles and settings</p>
-            </div>
+            <AdminDoctorManagement />
           </ProtectedRoute>
         } />
         <Route path="/admin/appointments" element={
@@ -131,10 +134,7 @@ const AppContent: React.FC = () => {
         } />
         <Route path="/admin/patients" element={
           <ProtectedRoute allowedRoles={['admin']}>
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-gray-900">Patient Management</h2>
-              <p className="text-gray-600 mt-2">Coming soon - View and manage patient records</p>
-            </div>
+            <AdminPatientManagement />
           </ProtectedRoute>
         } />
         <Route path="/admin/prescriptions" element={
