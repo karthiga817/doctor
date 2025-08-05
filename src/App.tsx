@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Auth Components
 import Login from './components/auth/Login';
@@ -24,7 +25,11 @@ import DoctorAppointments from './pages/DoctorAppointments';
 import AdminDashboard from './pages/AdminDashboard';
 
 const AppContent: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   if (!user) {
     return (

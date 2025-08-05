@@ -42,17 +42,29 @@ const DoctorAppointments: React.FC = () => {
   };
 
   const handleConfirmAppointment = (appointmentId: string) => {
-    updateAppointment(appointmentId, { status: 'confirmed' });
+    updateAppointment(appointmentId, { status: 'confirmed' }).then(success => {
+      if (!success) {
+        alert('Failed to confirm appointment. Please try again.');
+      }
+    });
   };
 
   const handleRejectAppointment = (appointmentId: string) => {
     if (confirm('Are you sure you want to reject this appointment?')) {
-      updateAppointment(appointmentId, { status: 'rejected' });
+      updateAppointment(appointmentId, { status: 'rejected' }).then(success => {
+        if (!success) {
+          alert('Failed to reject appointment. Please try again.');
+        }
+      });
     }
   };
 
   const handleCompleteAppointment = (appointmentId: string) => {
-    updateAppointment(appointmentId, { status: 'completed' });
+    updateAppointment(appointmentId, { status: 'completed' }).then(success => {
+      if (!success) {
+        alert('Failed to complete appointment. Please try again.');
+      }
+    });
   };
 
   const statusCounts = {

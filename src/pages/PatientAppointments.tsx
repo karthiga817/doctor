@@ -47,7 +47,11 @@ const PatientAppointments: React.FC = () => {
 
   const handleCancelAppointment = (appointmentId: string) => {
     if (confirm('Are you sure you want to cancel this appointment?')) {
-      updateAppointment(appointmentId, { status: 'cancelled' });
+      updateAppointment(appointmentId, { status: 'cancelled' }).then(success => {
+        if (!success) {
+          alert('Failed to cancel appointment. Please try again.');
+        }
+      });
     }
   };
 

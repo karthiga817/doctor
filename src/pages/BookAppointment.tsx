@@ -82,20 +82,20 @@ const BookAppointment: React.FC = () => {
       return;
     }
 
-    const appointmentData = {
+    addAppointment({
       patientId: user!.id,
       doctorId: selectedDoctor.id,
-      patientName: user!.name,
-      doctorName: selectedDoctor.name,
-      doctorSpecialization: selectedDoctor.specialization,
       date: selectedDate,
       time: selectedTime,
       status: 'pending' as const,
       reason: reason
-    };
-
-    addAppointment(appointmentData);
-    navigate('/patient/appointments');
+    }).then(success => {
+      if (success) {
+        navigate('/patient/appointments');
+      } else {
+        alert('Failed to book appointment. Please try again.');
+      }
+    });
   };
 
   if (showBookingForm) {

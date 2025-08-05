@@ -43,11 +43,6 @@ const Login: React.FC = () => {
   };
 
   // Demo credentials
-  const demoCredentials = [
-    { role: 'Admin', email: 'admin@hospital.com', password: 'admin123' },
-    { role: 'Doctor', email: 'dr.smith@hospital.com', password: 'doctor123' },
-    { role: 'Patient', email: 'patient@email.com', password: 'patient123' }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
@@ -138,26 +133,6 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Demo Credentials */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Demo Credentials</h3>
-          <div className="space-y-3">
-            {demoCredentials.map((cred, index) => (
-              <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-700">{cred.role}</span>
-                  <button
-                    onClick={() => setFormData({ email: cred.email, password: cred.password })}
-                    className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-                  >
-                    Use
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600">{cred.email}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

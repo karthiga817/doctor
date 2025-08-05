@@ -1,10 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Doctor, Patient } from '../types';
+import { supabase } from '../lib/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  role: 'admin' | 'doctor' | 'patient';
+  createdAt: string;
+}
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (userData: any) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
@@ -12,125 +23,179 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock data - in a real app, this would come from a backend
-const mockUsers: (Doctor | Patient | User)[] = [
-  {
-    id: 'admin1',
-    email: 'admin@hospital.com',
-    password: 'admin123',
-    name: 'System Administrator',
-    phone: '+1234567890',
-    role: 'admin',
-    createdAt: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: 'doc1',
-    email: 'dr.smith@hospital.com',
-    password: 'doctor123',
-    name: 'Dr. John Smith',
-    phone: '+1234567891',
-    role: 'doctor',
-    specialization: 'Cardiology',
-    experience: 10,
-    availability: [
-      { day: 'Monday', startTime: '09:00', endTime: '17:00' },
-      { day: 'Tuesday', startTime: '09:00', endTime: '17:00' },
-      { day: 'Wednesday', startTime: '09:00', endTime: '17:00' }
-    ],
-    leaveDays: [],
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: 'doc2',
-    email: 'dr.johnson@hospital.com',
-    password: 'doctor123',
-    name: 'Dr. Sarah Johnson',
-    phone: '+1234567892',
-    role: 'doctor',
-    specialization: 'Dermatology',
-    experience: 8,
-    availability: [
-      { day: 'Monday', startTime: '10:00', endTime: '18:00' },
-      { day: 'Thursday', startTime: '10:00', endTime: '18:00' },
-      { day: 'Friday', startTime: '10:00', endTime: '18:00' }
-    ],
-    leaveDays: [],
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: 'patient1',
-    email: 'patient@email.com',
-    password: 'patient123',
-    name: 'Jane Doe',
-    phone: '+1234567893',
-    role: 'patient',
-    dateOfBirth: '1990-05-15',
-    address: '123 Main St, City, State',
-    createdAt: '2024-01-01T00:00:00Z'
-  }
-] as any[];
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      delete userData.password;
-      setUser(userData);
-    }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await fetchUserProfile(session.user);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const foundUser = mockUsers.find(u => u.email === email && (u as any).password === password);
-    if (foundUser) {
-      const userWithoutPassword = { ...foundUser };
-      delete (userWithoutPassword as any).password;
-      setUser(userWithoutPassword);
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      return true;
+  const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setUser({
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          phone: data.phone,
+          role: data.role,
+          createdAt: data.created_at
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setLoading(false);
     }
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('currentUser');
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      return !!data.user;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const register = async (userData: any): Promise<boolean> => {
-    // In a real app, this would send data to backend
-    const newUser = {
-      id: `user_${Date.now()}`,
-      ...userData,
-      createdAt: new Date().toISOString()
-    };
-    
-    mockUsers.push(newUser);
-    const userWithoutPassword = { ...newUser };
-    delete userWithoutPassword.password;
-    setUser(userWithoutPassword);
-    localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-    return true;
+    try {
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Create user profile
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            email: userData.email,
+            name: userData.name,
+            phone: userData.phone,
+            role: userData.role || 'patient'
+          });
+
+        if (profileError) throw profileError;
+
+        // If patient, create patient record
+        if (userData.role === 'patient' || !userData.role) {
+          const { error: patientError } = await supabase
+            .from('patients')
+            .insert({
+              user_id: authData.user.id,
+              date_of_birth: userData.dateOfBirth,
+              address: userData.address
+            });
+
+          if (patientError) throw patientError;
+        }
+
+        // If doctor, create doctor record
+        if (userData.role === 'doctor') {
+          const { error: doctorError } = await supabase
+            .from('doctors')
+            .insert({
+              user_id: authData.user.id,
+              specialization: userData.specialization,
+              experience: userData.experience || 0,
+              availability: userData.availability || [],
+              is_active: true
+            });
+
+          if (doctorError) throw doctorError;
+        }
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
+    }
   };
 
   const forgotPassword = async (email: string): Promise<boolean> => {
-    // In a real app, this would send reset email
-    const foundUser = mockUsers.find(u => u.email === email);
-    return !!foundUser;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return false;
+    }
   };
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
-    // In a real app, this would validate token and update password
-    return true;
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return false;
+    }
   };
 
   return (
     <AuthContext.Provider value={{
       user,
+      loading,
       login,
       logout,
       register,
