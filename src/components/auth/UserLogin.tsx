@@ -127,10 +127,16 @@ const UserLogin: React.FC = () => {
             <div className="text-center">
               <Link
                 to="/register"
-                className="text-sm text-green-600 hover:text-green-500"
+                className="text-sm text-green-600 hover:text-green-500 block"
               >
                 Don't have an account? Register as Patient
               </Link>
+              
+              <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <strong>Demo Login:</strong> Use patient@medbook.com / patient123 for testing.
+                </p>
+              </div>
             </div>
 
             <div className="border-t border-gray-200 pt-4">

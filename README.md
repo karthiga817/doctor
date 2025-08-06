@@ -48,6 +48,25 @@ A comprehensive medical appointment booking system built with React, TypeScript,
 
 ## Setup Instructions
 
+### Demo Credentials
+
+For immediate testing, use these demo accounts:
+
+**Admin Access:**
+- Email: `admin@medbook.com`
+- Password: `admin123`
+- URL: `/admin/login`
+
+**Doctor Access:**
+- Email: `doctor@medbook.com`
+- Password: `doctor123`
+- URL: `/doctor/login`
+
+**Patient Access:**
+- Email: `patient@medbook.com`
+- Password: `patient123`
+- URL: `/login`
+
 ### 1. Clone the Repository
 ```bash
 git clone <repository-url>

@@ -79,6 +79,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string, expectedRole?: string): Promise<boolean> => {
     try {
+      // Handle demo logins
+      if (email === 'admin@medbook.com' && password === 'admin123') {
+        const demoAdmin = {
+          id: '00000000-0000-0000-0000-000000000001',
+          email: 'admin@medbook.com',
+          name: 'System Administrator',
+          phone: '+1-555-0100',
+          role: 'admin' as const,
+          createdAt: new Date().toISOString()
+        };
+        setUser(demoAdmin);
+        return true;
+      }
+      
+      if (email === 'doctor@medbook.com' && password === 'doctor123') {
+        const demoDoctor = {
+          id: '00000000-0000-0000-0000-000000000002',
+          email: 'doctor@medbook.com',
+          name: 'Dr. John Smith',
+          phone: '+1-555-0200',
+          role: 'doctor' as const,
+          createdAt: new Date().toISOString()
+        };
+        setUser(demoDoctor);
+        return true;
+      }
+      
+      if (email === 'patient@medbook.com' && password === 'patient123') {
+        const demoPatient = {
+          id: '00000000-0000-0000-0000-000000000003',
+          email: 'patient@medbook.com',
+          name: 'Jane Doe',
+          phone: '+1-555-0300',
+          role: 'patient' as const,
+          createdAt: new Date().toISOString()
+        };
+        setUser(demoPatient);
+        return true;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password

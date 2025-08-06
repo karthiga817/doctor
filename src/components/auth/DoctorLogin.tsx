@@ -147,8 +147,7 @@ const DoctorLogin: React.FC = () => {
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Doctor accounts are created by administrators. 
-              Contact your system administrator if you need access.
+              <strong>Demo Login:</strong> Use doctor@medbook.com / doctor123 for testing.
             </p>
           </div>
         </div>
